@@ -1,0 +1,209 @@
+/* ------------------------------------------------------------------ */
+/* Landing page — hero override                                        */
+/* ------------------------------------------------------------------ */
+
+/* Reset the two-column grid hero from style.css */
+.hero {
+    display: block;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+}
+
+.lp-hero-inner {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 5rem 2rem 5.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Badge */
+.lp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #e5f4ed;
+    border: 1px solid #b5d9c5;
+    border-radius: 999px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1a5c38;
+    margin-bottom: 2.25rem;
+}
+
+.lp-badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2a9d5c;
+    flex-shrink: 0;
+}
+
+/* Heading */
+.lp-title {
+    font-family: var(--font-body);
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+}
+
+.lp-title-green {
+    color: #1d8b4e;
+    display: block;
+}
+
+/* Subtitle */
+.lp-subtitle {
+    font-size: 1.1rem;
+    color: var(--ink-muted);
+    line-height: 1.75;
+    max-width: 540px;
+    margin-bottom: 2.5rem;
+}
+
+/* CTA buttons */
+.lp-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 4rem;
+}
+
+.lp-btn {
+    display: inline-block;
+    background: #0f0f0f;
+    color: #ffffff;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.lp-btn:hover {
+    background: #1d8b4e;
+}
+
+/* Mockup window */
+.lp-mockup {
+    width: 100%;
+    background: #f0efec;
+    border-radius: 16px;
+    padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.lp-chrome {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+}
+
+.lp-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.lp-dot-red    { background: #ff5f57; }
+.lp-dot-yellow { background: #ffbd2e; }
+.lp-dot-green  { background: #28c840; }
+
+/* Stat cards */
+.lp-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.lp-stat-card {
+    background: #ffffff;
+    border: 1px solid #e4e2de;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.lp-stat-label {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.lp-stat-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #0f0f0f;
+    letter-spacing: -0.025em;
+    font-family: var(--font-body);
+}
+
+.lp-stat-tag {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #888;
+}
+.lp-tag-red   { color: #e05252; }
+.lp-tag-green { color: #2a9d5c; }
+
+/* Category bars */
+.lp-bars {
+    background: #ffffff;
+    border: 1px solid #e4e2de;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.lp-bar-row {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.lp-bar-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #444;
+    text-align: right;
+}
+
+.lp-bar-track {
+    height: 8px;
+    background: #e8e6e1;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.lp-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+.lp-bar-orange { background: #f5a623; }
+.lp-bar-blue   { background: #4a90d9; }
+.lp-bar-purple { background: #7c6bc4; }
+
+/* Mobile */
+@media (max-width: 600px) {
+    .lp-stats {
+        grid-template-columns: 1fr;
+    }
+    .lp-subtitle br {
+        display: none;
+    }
+}
