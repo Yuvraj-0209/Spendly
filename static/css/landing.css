@@ -198,6 +198,66 @@
 .lp-bar-blue   { background: #4a90d9; }
 .lp-bar-purple { background: #7c6bc4; }
 
+/* ------------------------------------------------------------------ */
+/* Modal                                                               */
+/* ------------------------------------------------------------------ */
+
+.lp-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.lp-modal-overlay.lp-modal-open {
+    display: flex;
+}
+
+.lp-modal-box {
+    position: relative;
+    width: min(860px, 100%);
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.lp-modal-close {
+    position: absolute;
+    top: -2.25rem;
+    right: 0;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+}
+
+.lp-modal-close:hover {
+    opacity: 1;
+}
+
+.lp-modal-video {
+    position: relative;
+    aspect-ratio: 16 / 9;
+}
+
+.lp-modal-video iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
 /* Mobile */
 @media (max-width: 600px) {
     .lp-stats {
