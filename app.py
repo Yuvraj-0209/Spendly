@@ -81,7 +81,7 @@ def login():
 
         session['user_id']   = user["id"]
         session['user_name'] = user["name"]
-        return redirect(url_for('landing'))
+        return redirect(url_for('profile'))
 
     return render_template("login.html")
 
@@ -108,7 +108,39 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return render_template("profile.html")
+    guard = login_required()
+    if guard:
+        return guard
+
+    conn = get_db()
+    user = conn.execute(
+        "SELECT id, name, email, created_at FROM users WHERE id = ?",
+        (session['user_id'],)
+    ).fetchone()
+    stats = conn.execute(
+        "SELECT COUNT(*) AS expense_count, COALESCE(SUM(amount), 0) AS total_spent "
+        "FROM expenses WHERE user_id = ?",
+        (session['user_id'],)
+    ).fetchone()
+    categories = conn.execute(
+        "SELECT category, COALESCE(SUM(amount), 0) AS total "
+        "FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC",
+        (session['user_id'],)
+    ).fetchall()
+    expenses_list = conn.execute(
+        "SELECT amount, category, date, description FROM expenses "
+        "WHERE user_id = ? ORDER BY date DESC",
+        (session['user_id'],)
+    ).fetchall()
+    conn.close()
+
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        categories=[dict(r) for r in categories],
+        expenses_list=[dict(r) for r in expenses_list],
+    )
 
 
 @app.route("/expenses/add")
