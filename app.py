@@ -158,5 +158,34 @@ def delete_expense(id):
     return "Delete expense — coming in Step 9"
 
 
+@app.route("/expenses/stats")
+def expense_stats():
+    guard = login_required()
+    if guard:
+        return guard
+
+    conn = get_db()
+    stats = conn.execute(
+        """
+        SELECT
+            COUNT(*)                          AS expense_count,
+            COALESCE(SUM(amount), 0)          AS total_spent,
+            COALESCE(AVG(amount), 0)          AS avg_amount,
+            COALESCE(MAX(amount), 0)          AS max_amount,
+            COALESCE(MIN(amount), 0)          AS min_amount,
+            COALESCE(SUM(CASE WHEN strftime('%Y-%m', date) = strftime('%Y-%m', 'now') THEN amount END), 0)
+                                              AS this_month_total,
+            COUNT(CASE WHEN strftime('%Y-%m', date) = strftime('%Y-%m', 'now') THEN 1 END)
+                                              AS this_month_count
+        FROM expenses
+        WHERE user_id = ?
+        """,
+        (session['user_id'],)
+    ).fetchone()
+    conn.close()
+
+    return render_template("expenses-stats.html", stats=dict(stats))
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

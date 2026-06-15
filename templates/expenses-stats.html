@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Spending Stats — Spendly{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="profile-header-inner">
+        <h1 class="terms-title">Spending Stats</h1>
+    </div>
+</div>
+
+<div class="stats-page">
+    <div class="stats-inner">
+
+        <div class="stats-grid">
+            <div class="stats-tile">
+                <span class="stats-tile-value">{{ stats.expense_count }}</span>
+                <span class="stats-tile-label">Total expenses</span>
+            </div>
+            <div class="stats-tile">
+                <span class="stats-tile-value">₹{{ "%.2f" % stats.total_spent }}</span>
+                <span class="stats-tile-label">Total spent</span>
+            </div>
+            <div class="stats-tile">
+                <span class="stats-tile-value">₹{{ "%.2f" % stats.avg_amount }}</span>
+                <span class="stats-tile-label">Average expense</span>
+            </div>
+            <div class="stats-tile">
+                <span class="stats-tile-value">₹{{ "%.2f" % stats.max_amount }}</span>
+                <span class="stats-tile-label">Largest expense</span>
+            </div>
+            <div class="stats-tile">
+                <span class="stats-tile-value">₹{{ "%.2f" % stats.min_amount }}</span>
+                <span class="stats-tile-label">Smallest expense</span>
+            </div>
+            <div class="stats-tile stats-tile-accent">
+                <span class="stats-tile-value">₹{{ "%.2f" % stats.this_month_total }}</span>
+                <span class="stats-tile-label">This month</span>
+                <span class="stats-tile-sub">{{ stats.this_month_count }} expense{% if stats.this_month_count != 1 %}s{% endif %}</span>
+            </div>
+        </div>
+
+        <div class="stats-actions">
+            <a href="{{ url_for('expense_categories') }}" class="btn-ghost">View by category →</a>
+            <a href="{{ url_for('profile') }}" class="btn-ghost">Back to profile</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
