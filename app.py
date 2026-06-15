@@ -291,5 +291,40 @@ def expense_stats():
     return render_template("expenses-stats.html", stats=dict(stats))
 
 
+@app.route("/expenses/categories")
+def expense_categories():
+    guard = login_required()
+    if guard:
+        return guard
+
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT
+            category,
+            COUNT(*)                       AS count,
+            COALESCE(SUM(amount), 0)       AS total,
+            COALESCE(AVG(amount), 0)       AS avg_amount,
+            COALESCE(MAX(amount), 0)       AS max_amount,
+            MAX(date)                      AS last_date
+        FROM expenses
+        WHERE user_id = ?
+        GROUP BY category
+        ORDER BY total DESC
+        """,
+        (session['user_id'],)
+    ).fetchall()
+
+    grand_total = sum(r['total'] for r in rows)
+    categories = []
+    for r in rows:
+        d = dict(r)
+        d['pct'] = round((d['total'] / grand_total * 100), 1) if grand_total > 0 else 0
+        categories.append(d)
+
+    conn.close()
+    return render_template("expenses-categories.html", categories=categories, grand_total=grand_total)
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
