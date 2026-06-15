@@ -916,3 +916,107 @@ a { color: inherit; text-decoration: none; }
     color: var(--ink);
     white-space: nowrap;
 }
+
+/* ── Category breakdown page ─────────────────────────────────────────── */
+.cat-page {
+    padding: 3rem 1.5rem;
+}
+
+.cat-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.cat-summary {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    text-align: center;
+}
+
+.cat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.cat-row {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cat-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.cat-name {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--ink);
+}
+
+.cat-total {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.cat-bar-track {
+    height: 6px;
+    background: var(--border-soft);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.cat-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.cat-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.cat-meta-item {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+}
+
+.cat-meta-sep {
+    font-size: 0.78rem;
+    color: var(--border);
+}
+
+.cat-pct {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    font-weight: 600;
+}
+
+.cat-empty {
+    text-align: center;
+    color: var(--ink-muted);
+    padding: 2rem 0;
+}
+
+.cat-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding-top: 0.5rem;
+}
