@@ -3,7 +3,201 @@
 {% block title %}Profile — Spendly{% endblock %}
 
 {% block content %}
-<div style="text-align: center; padding: var(--space-xl) var(--space-md);">
-    <h1>Profile page — coming in Step 4</h1>
+<div class="profile-header">
+    <div class="profile-header-inner">
+        <h1 class="terms-title">Your Profile</h1>
+    </div>
 </div>
+
+<div class="profile-page">
+    <div class="profile-inner">
+
+        <div class="profile-card">
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar">
+                    {% set parts = user.name.split() %}
+                    {% if parts | length >= 2 %}{{ parts[0][0] | upper }}{{ parts[1][0] | upper }}
+                    {% else %}{{ parts[0][0] | upper }}{% endif %}
+                </div>
+            </div>
+            <p class="profile-name">{{ user.name }}</p>
+            <p class="profile-email">{{ user.email }}</p>
+            <p class="profile-meta">Member since {{ user.created_at[:10] }}</p>
+
+            <hr class="profile-divider">
+
+            <div class="profile-stats">
+                <div class="profile-stat profile-stat-clickable" id="openChartBtn" title="View breakdown by category">
+                    <span class="profile-stat-value">{{ stats.expense_count }}</span>
+                    <span class="profile-stat-label">Expenses logged</span>
+                    <span class="profile-stat-hint">tap to see breakdown</span>
+                </div>
+                <div class="profile-stat profile-stat-clickable" id="openListBtn" title="View all expenses">
+                    <span class="profile-stat-value">₹{{ "%.2f" % stats.total_spent }}</span>
+                    <span class="profile-stat-label">Total spent</span>
+                    <span class="profile-stat-hint">tap to see all</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a href="{{ url_for('logout') }}" class="btn-ghost">Sign out</a>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal 1: Category pie chart -->
+<div class="profile-modal-overlay" id="chartModal">
+    <div class="profile-modal-box">
+        <button class="profile-modal-close" id="closeChartBtn" aria-label="Close">&#x2715;</button>
+        <h2 class="profile-modal-title">Spending by category</h2>
+        <div class="profile-chart-wrap">
+            <canvas id="categoryChart"></canvas>
+        </div>
+        <ul class="profile-legend" id="chartLegend"></ul>
+    </div>
+</div>
+
+<!-- Modal 2: Full expense list -->
+<div class="profile-modal-overlay" id="listModal">
+    <div class="profile-modal-box">
+        <button class="profile-modal-close" id="closeListBtn" aria-label="Close">&#x2715;</button>
+        <h2 class="profile-modal-title">All expenses</h2>
+        <div class="expense-list">
+            {% if expenses_list %}
+                {% for e in expenses_list %}
+                <div class="expense-row">
+                    <span class="expense-date">{{ e.date }}</span>
+                    <div class="expense-info">
+                        <span class="expense-desc">{{ e.description or e.category }}</span>
+                        <span class="expense-cat">{{ e.category }}</span>
+                    </div>
+                    <span class="expense-amount">₹{{ "%.2f" % e.amount }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="profile-meta" style="text-align:center; padding: 2rem 0;">No expenses logged yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var categoryData = {{ categories | tojson }};
+
+    var COLORS = {
+        'Food':          '#f5a623',
+        'Transport':     '#4a90d9',
+        'Bills':         '#7c6bc4',
+        'Health':        '#2a9d5c',
+        'Shopping':      '#e05252',
+        'Entertainment': '#c17f24',
+        'Other':         '#a0a0a0',
+    };
+
+    function colorFor(cat) {
+        return COLORS[cat] || '#888888';
+    }
+
+    var chartInstance = null;
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // Chart modal
+    document.getElementById('openChartBtn').addEventListener('click', function () {
+        openModal('chartModal');
+
+        if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+        }
+
+        var labels  = categoryData.map(function (d) { return d.category; });
+        var totals  = categoryData.map(function (d) { return d.total; });
+        var colors  = labels.map(colorFor);
+
+        var ctx = document.getElementById('categoryChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: totals,
+                    backgroundColor: colors,
+                    borderColor: '#ffffff',
+                    borderWidth: 3,
+                    hoverOffset: 12,
+                }]
+            },
+            options: {
+                animation: { duration: 700, easing: 'easeInOutQuart' },
+                cutout: '58%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                var val = ctx.parsed;
+                                var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                                var pct = ((val / total) * 100).toFixed(1);
+                                return ' ₹' + val.toFixed(2) + '  (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Custom legend
+        var legend = document.getElementById('chartLegend');
+        legend.innerHTML = '';
+        labels.forEach(function (label, i) {
+            var total = totals[i];
+            var grandTotal = totals.reduce(function (a, b) { return a + b; }, 0);
+            var pct = grandTotal > 0 ? ((total / grandTotal) * 100).toFixed(1) : '0.0';
+            var li = document.createElement('li');
+            li.className = 'profile-legend-item';
+            li.innerHTML =
+                '<span class="profile-legend-dot" style="background:' + colors[i] + '"></span>' +
+                '<span class="profile-legend-label">' + label + '</span>' +
+                '<span class="profile-legend-pct">' + pct + '%</span>' +
+                '<span class="profile-legend-amt">₹' + total.toFixed(2) + '</span>';
+            legend.appendChild(li);
+        });
+    });
+
+    document.getElementById('closeChartBtn').addEventListener('click', function () { closeModal('chartModal'); });
+    document.getElementById('chartModal').addEventListener('click', function (e) {
+        if (e.target === this) closeModal('chartModal');
+    });
+
+    // List modal
+    document.getElementById('openListBtn').addEventListener('click', function () { openModal('listModal'); });
+    document.getElementById('closeListBtn').addEventListener('click', function () { closeModal('listModal'); });
+    document.getElementById('listModal').addEventListener('click', function (e) {
+        if (e.target === this) closeModal('listModal');
+    });
+
+    // Escape key closes any open modal
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeModal('chartModal');
+            closeModal('listModal');
+        }
+    });
+}());
+</script>
 {% endblock %}
