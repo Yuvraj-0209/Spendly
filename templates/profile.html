@@ -64,6 +64,9 @@
     <div class="profile-modal-box">
         <button class="profile-modal-close" id="closeListBtn" aria-label="Close">&#x2715;</button>
         <h2 class="profile-modal-title">All expenses</h2>
+        <div class="expense-list-header">
+            <a href="{{ url_for('add_expense') }}" class="btn-primary expense-add-btn">+ Add Expense</a>
+        </div>
         <div class="expense-list">
             {% if expenses_list %}
                 {% for e in expenses_list %}
@@ -74,10 +77,16 @@
                         <span class="expense-cat">{{ e.category }}</span>
                     </div>
                     <span class="expense-amount">₹{{ "%.2f" % e.amount }}</span>
+                    <div class="expense-actions">
+                        <a href="{{ url_for('edit_expense', id=e.id) }}" class="expense-edit-btn">Edit</a>
+                        <form class="expense-delete-form" method="POST" action="{{ url_for('delete_expense', id=e.id) }}">
+                            <button type="submit" class="expense-delete-btn">Delete</button>
+                        </form>
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
-                <p class="profile-meta" style="text-align:center; padding: 2rem 0;">No expenses logged yet.</p>
+                <p class="profile-meta" style="text-align:center; padding: 2rem 0;">No expenses logged yet. <a href="{{ url_for('add_expense') }}">Add your first expense →</a></p>
             {% endif %}
         </div>
     </div>
