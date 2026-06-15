@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Categories — Spendly{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="profile-header-inner">
+        <h1 class="terms-title">Spending by Category</h1>
+    </div>
+</div>
+
+<div class="cat-page">
+    <div class="cat-inner">
+
+        {% if categories %}
+        <p class="cat-summary">
+            Total across all categories: <strong>₹{{ "%.2f" % grand_total }}</strong>
+        </p>
+
+        <div class="cat-list">
+            {% for c in categories %}
+            <div class="cat-row">
+                <div class="cat-row-top">
+                    <span class="cat-name">{{ c.category }}</span>
+                    <span class="cat-total">₹{{ "%.2f" % c.total }}</span>
+                </div>
+                <div class="cat-bar-track">
+                    <div class="cat-bar-fill" style="width: {{ c.pct }}%"></div>
+                </div>
+                <div class="cat-row-meta">
+                    <span class="cat-meta-item">{{ c.count }} expense{% if c.count != 1 %}s{% endif %}</span>
+                    <span class="cat-meta-sep">·</span>
+                    <span class="cat-meta-item">avg ₹{{ "%.2f" % c.avg_amount }}</span>
+                    <span class="cat-meta-sep">·</span>
+                    <span class="cat-meta-item">max ₹{{ "%.2f" % c.max_amount }}</span>
+                    <span class="cat-meta-sep">·</span>
+                    <span class="cat-meta-item">last {{ c.last_date }}</span>
+                    <span class="cat-pct">{{ c.pct }}%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="cat-empty">No expenses recorded yet. <a href="{{ url_for('add_expense') }}">Add your first expense →</a></p>
+        {% endif %}
+
+        <div class="cat-actions">
+            <a href="{{ url_for('expense_stats') }}" class="btn-ghost">View summary stats →</a>
+            <a href="{{ url_for('profile') }}" class="btn-ghost">Back to profile</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

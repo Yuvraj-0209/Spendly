@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense — Spendly{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="profile-header-inner">
+        <h1 class="terms-title">Add Expense</h1>
+    </div>
+</div>
+
+<div class="auth-section">
+    <div class="auth-container">
+        <div class="auth-card">
+            {% if error %}
+            <p class="auth-error">{{ error }}</p>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('add_expense') }}">
+                <div class="form-group">
+                    <label class="form-label" for="amount">Amount (₹)</label>
+                    <input class="form-input" type="number" id="amount" name="amount"
+                           step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="category">Category</label>
+                    <select class="form-input" id="category" name="category" required>
+                        <option value="" disabled selected>Select a category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="date">Date</label>
+                    <input class="form-input" type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description">Description <span class="form-optional">(optional)</span></label>
+                    <input class="form-input" type="text" id="description" name="description"
+                           placeholder="e.g. Lunch with team">
+                </div>
+
+                <button type="submit" class="btn-submit">Add Expense</button>
+            </form>
+
+            <p class="auth-switch"><a href="{{ url_for('profile') }}">← Back to profile</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

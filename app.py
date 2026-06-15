@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
+import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
 
@@ -128,7 +129,7 @@ def profile():
         (session['user_id'],)
     ).fetchall()
     expenses_list = conn.execute(
-        "SELECT amount, category, date, description FROM expenses "
+        "SELECT id, amount, category, date, description FROM expenses "
         "WHERE user_id = ? ORDER BY date DESC",
         (session['user_id'],)
     ).fetchall()
@@ -143,19 +144,186 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+VALID_CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+
+
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    guard = login_required()
+    if guard:
+        return guard
+
+    if request.method == "POST":
+        amount_str  = request.form.get("amount", "").strip()
+        category    = request.form.get("category", "").strip()
+        date_str    = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            return render_template("add-expense.html", error="Amount must be a positive number.", categories=VALID_CATEGORIES)
+
+        if category not in VALID_CATEGORIES:
+            return render_template("add-expense.html", error="Please select a valid category.", categories=VALID_CATEGORIES)
+
+        try:
+            datetime.date.fromisoformat(date_str)
+        except ValueError:
+            return render_template("add-expense.html", error="Date must be a valid YYYY-MM-DD date.", categories=VALID_CATEGORIES)
+
+        conn = get_db()
+        conn.execute(
+            "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
+            (session['user_id'], amount, category, date_str, description or None),
+        )
+        conn.commit()
+        conn.close()
+
+        flash("Expense added successfully.")
+        return redirect(url_for('profile'))
+
+    return render_template("add-expense.html", categories=VALID_CATEGORIES)
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    guard = login_required()
+    if guard:
+        return guard
+
+    conn = get_db()
+    expense = conn.execute(
+        "SELECT * FROM expenses WHERE id = ? AND user_id = ?",
+        (id, session['user_id'])
+    ).fetchone()
+    if not expense:
+        conn.close()
+        abort(404)
+
+    if request.method == "POST":
+        amount_str  = request.form.get("amount", "").strip()
+        category    = request.form.get("category", "").strip()
+        date_str    = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            conn.close()
+            return render_template("edit-expense.html", expense=expense, error="Amount must be a positive number.", categories=VALID_CATEGORIES)
+
+        if category not in VALID_CATEGORIES:
+            conn.close()
+            return render_template("edit-expense.html", expense=expense, error="Please select a valid category.", categories=VALID_CATEGORIES)
+
+        try:
+            datetime.date.fromisoformat(date_str)
+        except ValueError:
+            conn.close()
+            return render_template("edit-expense.html", expense=expense, error="Date must be a valid YYYY-MM-DD date.", categories=VALID_CATEGORIES)
+
+        conn.execute(
+            "UPDATE expenses SET amount=?, category=?, date=?, description=? WHERE id=? AND user_id=?",
+            (amount, category, date_str, description or None, id, session['user_id']),
+        )
+        conn.commit()
+        conn.close()
+
+        flash("Expense updated.")
+        return redirect(url_for('profile'))
+
+    conn.close()
+    return render_template("edit-expense.html", expense=expense, categories=VALID_CATEGORIES)
 
 
-@app.route("/expenses/<int:id>/delete")
+@app.route("/expenses/<int:id>/delete", methods=["POST"])
 def delete_expense(id):
-    return "Delete expense — coming in Step 9"
+    guard = login_required()
+    if guard:
+        return guard
+
+    conn = get_db()
+    result = conn.execute(
+        "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+        (id, session['user_id'])
+    )
+    conn.commit()
+    conn.close()
+
+    if result.rowcount == 0:
+        abort(404)
+
+    flash("Expense deleted.")
+    return redirect(url_for('profile'))
+
+
+@app.route("/expenses/stats")
+def expense_stats():
+    guard = login_required()
+    if guard:
+        return guard
+
+    conn = get_db()
+    stats = conn.execute(
+        """
+        SELECT
+            COUNT(*)                          AS expense_count,
+            COALESCE(SUM(amount), 0)          AS total_spent,
+            COALESCE(AVG(amount), 0)          AS avg_amount,
+            COALESCE(MAX(amount), 0)          AS max_amount,
+            COALESCE(MIN(amount), 0)          AS min_amount,
+            COALESCE(SUM(CASE WHEN strftime('%Y-%m', date) = strftime('%Y-%m', 'now') THEN amount END), 0)
+                                              AS this_month_total,
+            COUNT(CASE WHEN strftime('%Y-%m', date) = strftime('%Y-%m', 'now') THEN 1 END)
+                                              AS this_month_count
+        FROM expenses
+        WHERE user_id = ?
+        """,
+        (session['user_id'],)
+    ).fetchone()
+    conn.close()
+
+    return render_template("expenses-stats.html", stats=dict(stats))
+
+
+@app.route("/expenses/categories")
+def expense_categories():
+    guard = login_required()
+    if guard:
+        return guard
+
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT
+            category,
+            COUNT(*)                       AS count,
+            COALESCE(SUM(amount), 0)       AS total,
+            COALESCE(AVG(amount), 0)       AS avg_amount,
+            COALESCE(MAX(amount), 0)       AS max_amount,
+            MAX(date)                      AS last_date
+        FROM expenses
+        WHERE user_id = ?
+        GROUP BY category
+        ORDER BY total DESC
+        """,
+        (session['user_id'],)
+    ).fetchall()
+
+    grand_total = sum(r['total'] for r in rows)
+    categories = []
+    for r in rows:
+        d = dict(r)
+        d['pct'] = round((d['total'] / grand_total * 100), 1) if grand_total > 0 else 0
+        categories.append(d)
+
+    conn.close()
+    return render_template("expenses-categories.html", categories=categories, grand_total=grand_total)
 
 
 if __name__ == "__main__":
