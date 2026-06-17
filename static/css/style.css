@@ -1178,3 +1178,57 @@ a { color: inherit; text-decoration: none; }
     justify-content: center;
     padding-top: 0.5rem;
 }
+
+/* ---- Date filter bar ---- */
+.date-filter-bar {
+    background: var(--paper-warm);
+    border-bottom: 1px solid var(--border);
+    padding: 0.875rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.date-filter-form {
+    width: 100%;
+    max-width: 640px;
+}
+
+.date-filter-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+.date-filter-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    font-family: var(--font-body);
+}
+
+.date-filter-input {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.6rem;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--paper-card);
+    cursor: pointer;
+}
+
+.date-filter-input:focus {
+    outline: 2px solid var(--accent);
+    border-color: var(--accent);
+}
+
+.date-filter-active {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    font-family: var(--font-body);
+}

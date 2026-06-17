@@ -40,3 +40,4 @@ All colours, fonts, spacing radii, and max-widths are defined as CSS variables a
 ## Legal pages
 
 `/terms` and `/privacy` share CSS classes defined at the bottom of `style.css` (`.terms-header`, `.terms-page`, `.terms-body`, etc.). New legal-style content pages should reuse this same structure.
+ 
