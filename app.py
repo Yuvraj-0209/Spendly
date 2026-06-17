@@ -107,11 +107,35 @@ def logout():
     return redirect(url_for('landing'))
 
 
+def _parse_date_param(value, label):
+    if not value:
+        return None
+    try:
+        datetime.date.fromisoformat(value)
+        return value
+    except ValueError:
+        flash(f"Invalid '{label}' date — showing all expenses.")
+        return None
+
+
 @app.route("/profile")
 def profile():
     guard = login_required()
     if guard:
         return guard
+
+    date_from = _parse_date_param(request.args.get('date_from', '').strip(), 'from')
+    date_to   = _parse_date_param(request.args.get('date_to',   '').strip(), 'to')
+
+    date_clauses = []
+    date_params  = []
+    if date_from:
+        date_clauses.append("AND date >= ?")
+        date_params.append(date_from)
+    if date_to:
+        date_clauses.append("AND date <= ?")
+        date_params.append(date_to)
+    date_sql = " ".join(date_clauses)
 
     conn = get_db()
     user = conn.execute(
@@ -120,18 +144,18 @@ def profile():
     ).fetchone()
     stats = conn.execute(
         "SELECT COUNT(*) AS expense_count, COALESCE(SUM(amount), 0) AS total_spent "
-        "FROM expenses WHERE user_id = ?",
-        (session['user_id'],)
+        "FROM expenses WHERE user_id = ? " + date_sql,
+        (session['user_id'], *date_params)
     ).fetchone()
     categories = conn.execute(
         "SELECT category, COALESCE(SUM(amount), 0) AS total "
-        "FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC",
-        (session['user_id'],)
+        "FROM expenses WHERE user_id = ? " + date_sql + " GROUP BY category ORDER BY total DESC",
+        (session['user_id'], *date_params)
     ).fetchall()
     expenses_list = conn.execute(
         "SELECT id, amount, category, date, description FROM expenses "
-        "WHERE user_id = ? ORDER BY date DESC",
-        (session['user_id'],)
+        "WHERE user_id = ? " + date_sql + " ORDER BY date DESC",
+        (session['user_id'], *date_params)
     ).fetchall()
     conn.close()
 
@@ -141,6 +165,8 @@ def profile():
         stats=stats,
         categories=[dict(r) for r in categories],
         expenses_list=[dict(r) for r in expenses_list],
+        date_from=date_from or '',
+        date_to=date_to or '',
     )
 
 
